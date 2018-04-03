@@ -26,9 +26,9 @@
    -------
 */
 
-const int InitialBaudRate = 115200;
+const long InitialBaudRate = 115200;
 const int BaudRate = 9600;
-const int WifiRxPin = 2;
+const int WifiRxPin = 12;
 const int WifiTxPin = 13;
 const char NoResponse[] = "NA";
 
@@ -43,18 +43,18 @@ void setup()
     Serial.begin(BaudRate);
 
     // Set baud rate
-    wifi.println("AT+UART_CUR=9600,8,1,0,3");
+    wifi.println("AT+UART=9600,8,1,0,0");
 
     // Switching to new baud rate
     wifi.end();
     wifi.begin(BaudRate);
 
     // Set AP ssid
-    wifi.println("AT+CWSAP_CUR=\"moretech\",\"\",5,0");
+    wifi.println("AT+CWSAP=\"moretech\",\"\",5,0");
     Serial.println(getWifiResponse(wifi, ResponseTimeout));
 
     // Set as access point and station
-    wifi.println("AT+CWMODE_CUR=3");
+    wifi.println("AT+CWMODE=3");
     Serial.println(getWifiResponse(wifi, ResponseTimeout));
 
     // Allow multiple connections

@@ -29,11 +29,10 @@
 const long InitialBaudRate = 115200;
 const int BaudRate = 9600;
 const int WifiRxPin = 12;
-const int WifiTxPin = 13;
+const int WifiTxPin = 2;
 const char NoResponse[] = "NA";
 
 const int ResponseTimeout = 50;
-const int InputLengthIndex = 6;
 
 SoftwareSerial wifi(WifiRxPin, WifiTxPin);
 
@@ -82,6 +81,9 @@ void setup()
 
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
+
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
 }
 
 double dist;
@@ -92,28 +94,40 @@ int moveSpeed = 50;
 
 void loop()
 {
+    char lastCharacter = ' ';
+    String command = "";
+    String data = "";
     String response = "";
-    char character = getChar(wifi);
-    while (character != '+') {
-        response += character;
-        character = getChar(wifi);
+
+    if (wifi.available()) {
+        Serial.println("Reading");
+        lastCharacter = getChar(wifi);
+        while (wifi.available() && lastCharacter != '+') {
+            response += lastCharacter;
+            lastCharacter = getChar(wifi);
+        }
+
+        Serial.println(response);
     }
 
-    Serial.println(response);
+    if (lastCharacter == '+') {
+        Serial.println("Input found. Parsing.");
+        response = readInput(wifi);
 
-    response = readInput(wifi);
+        Serial.println(response);
 
-    Serial.println(response);
+        Serial.println("Parsing done. Deserializing.");
+        BotMessage message(response);
+        command = message.getCommand();
+        data = message.getData();
+        Serial.println(command + " " + data);
 
-    BotMessage message(response);
-    String command = message.getCommand();
-    String data = message.getData();
-
-    if (command == "mode") {
-        if (data == "yoyo") {
-            moveMode = 0;
-        } else {
-            moveMode = 1;
+        if (command == "mode") {
+            if (data == "yoyo") {
+                moveMode = 0;
+            } else {
+                moveMode = 1;
+            }
         }
     }
 
@@ -121,23 +135,32 @@ void loop()
         dist = getDistance();
         if (dist < 50 && dist > 1) {
             double error = targetDist - dist;
-            if (abs(error) > 1 && abs(error) < 20)
+            if (abs(error) > 1 && abs(error) < 20) {
                 forward(-error * 5);
-        } else
+            }
+        } else {
             forward(0);
-    } else {
+        }
+
+        delay(10);
+    } else if (command != "") {
         if (data == "stop") {
+            digitalWrite(13, LOW);
             forward(0);
-        } else if (data == "forward")
+        } else if (data == "forward") {
+            digitalWrite(13, HIGH);
             forward(moveSpeed);
-        else if (data == "backward")
+        } else if (data == "backward") {
+            digitalWrite(13, HIGH);
             backward(moveSpeed);
-        else if (command == "right")
+        } else if (data == "right") {
+            digitalWrite(13, HIGH);
             right(moveSpeed);
-        else if (command == "left")
+        } else if (data == "left") {
+            digitalWrite(13, HIGH);
             left(moveSpeed);
+        }
     }
-    delay(10);
 }
 
 /*

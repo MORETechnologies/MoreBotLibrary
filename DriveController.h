@@ -6,22 +6,18 @@
 class DriveController
 {
 public:
-    DriveController(int speed, int leftSpeedPin, int leftDirectionPin1, int leftDirectionPin2, int rightSpeedPin, int rightDirectionPin1, int rightDirectionPin2);
+    DriveController(int leftSpeedPin, int leftDirectionPin1, int leftDirectionPin2, int rightSpeedPin, int rightDirectionPin1, int rightDirectionPin2);
     void setup();
-    void goForward();
-    void goBackward();
-    void turnLeft();
-    void turnRight();
-    void moveLeftForward();
-    void moveRightForward();
-    void moveLeftBackward();
-    void moveRightBackward();
-    int getSpeed();
-    void setSpeed(int speed);
+    void goForward(int speed);
+    void goBackward(int speed);
+    void turnLeft(int speed);
+    void turnRight(int speed);
+    void moveLeftForward(int speed);
+    void moveRightForward(int speed);
+    void moveLeftBackward(int speed);
+    void moveRightBackward(int speed);
 
 private:
-    int speed;
-    int mappedSpeed;
     int leftSpeedPin;
     int leftDirectionPin1;
     int leftDirectionPin2;

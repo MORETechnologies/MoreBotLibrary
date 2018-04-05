@@ -1,4 +1,5 @@
 #include "BotMessage.h"
+#include "WifiProcessor.h"
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
 
@@ -26,43 +27,17 @@
    -------
 */
 
-const long InitialBaudRate = 115200;
 const int BaudRate = 9600;
 const int WifiRxPin = 12;
 const int WifiTxPin = 2;
-const char NoResponse[] = "NA";
+const int LedPin = 13;
 
-const int ResponseTimeout = 50;
-
-SoftwareSerial wifi(WifiRxPin, WifiTxPin);
+WifiProcessor wifi(WifiRxPin, WifiTxPin);
 
 void setup()
 {
-    wifi.begin(InitialBaudRate);
     Serial.begin(BaudRate);
-
-    // Set baud rate
-    wifi.println("AT+UART=9600,8,1,0,0");
-
-    // Switching to new baud rate
-    wifi.end();
-    wifi.begin(BaudRate);
-
-    // Set AP ssid
-    wifi.println("AT+CWSAP=\"moretech\",\"\",5,0");
-    Serial.println(getWifiResponse(wifi, ResponseTimeout));
-
-    // Set as access point and station
-    wifi.println("AT+CWMODE=3");
-    Serial.println(getWifiResponse(wifi, ResponseTimeout));
-
-    // Allow multiple connections
-    wifi.println("AT+CIPMUX=1");
-    Serial.println(getWifiResponse(wifi, ResponseTimeout));
-
-    // Create tcp server on port 333
-    wifi.println("AT+CIPSERVER=1,333");
-    Serial.println(getWifiResponse(wifi, ResponseTimeout));
+    wifi.begin("MORETechCo");
 
     pinMode(enA, OUTPUT);
     pinMode(in1, OUTPUT);
@@ -82,52 +57,33 @@ void setup()
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
 
-    pinMode(13, OUTPUT);
-    digitalWrite(13, HIGH);
+    pinMode(LedPin, OUTPUT);
+    digitalWrite(LedPin, LOW);
 }
 
 double dist;
 double targetDist = 20.0;
-// 0 = auto, 1 = manual, 2 = roomba
+// 0 = auto, 1 = manual
 int moveMode = 0;
 int moveSpeed = 50;
 
 void loop()
 {
-    char lastCharacter = ' ';
     String command = "";
     String data = "";
-    String response = "";
 
-    if (wifi.available()) {
-        Serial.println("Reading");
-        lastCharacter = getChar(wifi);
-        while (wifi.available() && lastCharacter != '+') {
-            response += lastCharacter;
-            lastCharacter = getChar(wifi);
-        }
-
-        Serial.println(response);
-    }
-
-    if (lastCharacter == '+') {
-        Serial.println("Input found. Parsing.");
-        response = readInput(wifi);
-
-        Serial.println(response);
-
-        Serial.println("Parsing done. Deserializing.");
-        BotMessage message(response);
+    wifi.read();
+    if (wifi.isMessageAvailable()) {
+        BotMessage message = wifi.dequeueMessage();
         command = message.getCommand();
         data = message.getData();
-        Serial.println(command + " " + data);
+    }
 
-        if (command == "mode") {
-            if (data == "yoyo") {
-                moveMode = 0;
-            } else {
-                moveMode = 1;
-            }
+    if (command == "mode") {
+        if (data == "yoyo") {
+            moveMode = 0;
+        } else {
+            moveMode = 1;
         }
     }
 
@@ -141,26 +97,26 @@ void loop()
         } else {
             forward(0);
         }
-
-        delay(10);
     } else if (command != "") {
         if (data == "stop") {
-            digitalWrite(13, LOW);
+            digitalWrite(LedPin, LOW);
             forward(0);
         } else if (data == "forward") {
-            digitalWrite(13, HIGH);
+            digitalWrite(LedPin, HIGH);
             forward(moveSpeed);
         } else if (data == "backward") {
-            digitalWrite(13, HIGH);
+            digitalWrite(LedPin, HIGH);
             backward(moveSpeed);
         } else if (data == "right") {
-            digitalWrite(13, HIGH);
+            digitalWrite(LedPin, HIGH);
             right(moveSpeed);
         } else if (data == "left") {
-            digitalWrite(13, HIGH);
+            digitalWrite(LedPin, HIGH);
             left(moveSpeed);
         }
     }
+
+    delay(10);
 }
 
 /*
@@ -171,7 +127,6 @@ void loop()
    forward(23);
    right(val);
    backward(0);
-
 */
 void right(int vel)
 {
@@ -242,23 +197,6 @@ void backward(int vel)
     analogWrite(enB, vel);
 }
 
-void forwardLeft(int vel)
-{
-    vel = map(vel, 0, 100, 0, 255);
-
-    //Left forwards
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
-
-    //Right forwards
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
-
-    //Tell them how fast to go (vel -> speed)
-    analogWrite(enA, vel / 3);
-    analogWrite(enB, vel);
-}
-
 //Distance function
 double getDistance()
 {
@@ -282,20 +220,24 @@ double getDistance()
 
         // Reads the echoPin, returns the sound wave travel time in microseconds
         duration = pulseIn(echo, HIGH);
-        // Calculating the distance
-        distance = duration * 0.034 / 2;
+        if (duration == 0) {
+            i = 10;
+        } else {
+            // Calculating the distance
+            distance = duration * 0.034 / 2;
 
-        if (distance < maxDist) {
-            if (count == 0) {
-                prevDist = distance;
-                sum += distance;
-                count++;
-            } else if (count > 0 && !(abs(distance - prevDist) >= 20)) {
-                //else if(abs(distance - prevDist) < (maxDelta * prevDist)){
-                //Serial.println(abs(distance - prevDist));
-                sum += distance;
-                prevDist = distance;
-                count++;
+            if (distance < maxDist) {
+                if (count == 0) {
+                    prevDist = distance;
+                    sum += distance;
+                    count++;
+                } else if (count > 0 && !(abs(distance - prevDist) >= 20)) {
+                    //else if(abs(distance - prevDist) < (maxDelta * prevDist)){
+                    //Serial.println(abs(distance - prevDist));
+                    sum += distance;
+                    prevDist = distance;
+                    count++;
+                }
             }
         }
     }
@@ -308,70 +250,4 @@ double getDistance()
     //Serial.println(distance);
 
     return distance;
-}
-
-String getWifiResponse(SoftwareSerial& wifi, int timeout)
-{
-    String response = "";
-
-    unsigned long startTime = millis();
-    while (millis() - startTime < timeout) {
-        while (wifi.available()) {
-            char character = wifi.read();
-            response += character;
-        }
-    }
-
-    if (response == "") {
-        response = NoResponse;
-    }
-
-    response.trim();
-    return response;
-}
-
-String readInput(SoftwareSerial& wifi)
-{
-    String command = "";
-    String connectionId = "";
-    long dataLength = 0;
-    String input = "";
-    char character = ' ';
-
-    // Read command type
-    while (character != ',') {
-        character = getChar(wifi);
-        command += character;
-    }
-
-    // Read connection id
-    character = ' ';
-    while (character != ',') {
-        character = getChar(wifi);
-        connectionId += character;
-    }
-
-    // Read data length
-    dataLength = wifi.parseInt();
-
-    // Read in semicolon
-    getChar(wifi);
-
-    // Read data
-    while (dataLength > 0) {
-        character = getChar(wifi);
-        input += character;
-        dataLength--;
-    }
-
-    return input;
-}
-
-char getChar(SoftwareSerial& wifi)
-{
-    while (!wifi.available()) {
-        delay(10);
-    }
-
-    return wifi.read();
 }

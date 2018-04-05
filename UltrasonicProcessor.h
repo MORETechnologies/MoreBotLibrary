@@ -7,6 +7,7 @@ class UltrasonicProcessor
 {
 public:
     UltrasonicProcessor(int triggerPin, int echoPin);
+    void setup();
     double readDistance();
 
 private:

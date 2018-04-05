@@ -13,6 +13,12 @@ UltrasonicProcessor::UltrasonicProcessor(int triggerPin, int echoPin)
     }
 }
 
+void UltrasonicProcessor::setup()
+{
+    pinMode(triggerPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+}
+
 double UltrasonicProcessor::readDistance()
 {
     // To make sure pin is not HIGH

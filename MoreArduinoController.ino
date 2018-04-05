@@ -1,5 +1,6 @@
 #include "BotMessage.h"
 #include "WifiProcessor.h"
+#include "UltrasonicProcessor.h"
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
 
@@ -10,9 +11,6 @@
 #define enB 6
 #define in3 7
 #define in4 8
-
-#define trigger 10
-#define echo 11
 /*
   Left motor is A
   Right motor is B
@@ -26,18 +24,34 @@
    HIGH  |
    -------
 */
+const int SerialBaudRate = 9600;
 
-const int BaudRate = 9600;
 const int WifiRxPin = 12;
 const int WifiTxPin = 2;
+
+// Ultrasonic pins
+const int TriggerPin = 10;
+const int EchoPin = 11;
+// Ultrasonic settings
+const double TargetDistance = 20;
+const double MinimumDistance = 1;
+const double MaximumDistance = 50;
+const int YoyoSpeedMultiplier = 5;
+
 const int LedPin = 13;
 
 WifiProcessor wifi(WifiRxPin, WifiTxPin);
+UltrasonicProcessor sonic(TriggerPin, EchoPin);
+
+int moveMode = 0;
+int moveSpeed = 50;
 
 void setup()
 {
-    Serial.begin(BaudRate);
+    Serial.begin(SerialBaudRate);
     wifi.begin("MORETechCo");
+
+    sonic.setup();
 
     pinMode(enA, OUTPUT);
     pinMode(in1, OUTPUT);
@@ -46,9 +60,6 @@ void setup()
     pinMode(enB, OUTPUT);
     pinMode(in3, OUTPUT);
     pinMode(in4, OUTPUT);
-
-    pinMode(trigger, OUTPUT);
-    pinMode(echo, INPUT);
 
     // Set initial rotation direction
     digitalWrite(in1, LOW);
@@ -60,12 +71,6 @@ void setup()
     pinMode(LedPin, OUTPUT);
     digitalWrite(LedPin, LOW);
 }
-
-double dist;
-double targetDist = 20.0;
-// 0 = auto, 1 = manual
-int moveMode = 0;
-int moveSpeed = 50;
 
 void loop()
 {
@@ -88,11 +93,12 @@ void loop()
     }
 
     if (moveMode == 0) {
-        dist = getDistance();
-        if (dist < 50 && dist > 1) {
-            double error = targetDist - dist;
-            if (abs(error) > 1 && abs(error) < 20) {
-                forward(-error * 5);
+        double distance = sonic.readDistance();
+        if (distance > 0 && distance <= MaximumDistance) {
+            double differenceToTarget = distance - TargetDistance;
+            double absoluteDifference = abs(differenceToTarget);
+            if (absoluteDifference >= MinimumDistance && absoluteDifference <= TargetDistance) {
+                forward(differenceToTarget * YoyoSpeedMultiplier);
             }
         } else {
             forward(0);
@@ -195,59 +201,4 @@ void backward(int vel)
     //Tell them how fast to go (vel -> speed)
     analogWrite(enA, vel);
     analogWrite(enB, vel);
-}
-
-//Distance function
-double getDistance()
-{
-    double sum = 0.0;
-    double distance;
-    long duration;
-    double maxDelta = 2.0;
-    double maxDist = 100;
-    double prevDist;
-    int count;
-
-    for (size_t i = 0; i < 10; i++) {
-        // Clears the trigPin
-        digitalWrite(trigger, LOW);
-        delayMicroseconds(2);
-
-        // Sets the trigPin on HIGH state for 10 micro seconds
-        digitalWrite(trigger, HIGH);
-        delayMicroseconds(10);
-        digitalWrite(trigger, LOW);
-
-        // Reads the echoPin, returns the sound wave travel time in microseconds
-        duration = pulseIn(echo, HIGH);
-        if (duration == 0) {
-            i = 10;
-        } else {
-            // Calculating the distance
-            distance = duration * 0.034 / 2;
-
-            if (distance < maxDist) {
-                if (count == 0) {
-                    prevDist = distance;
-                    sum += distance;
-                    count++;
-                } else if (count > 0 && !(abs(distance - prevDist) >= 20)) {
-                    //else if(abs(distance - prevDist) < (maxDelta * prevDist)){
-                    //Serial.println(abs(distance - prevDist));
-                    sum += distance;
-                    prevDist = distance;
-                    count++;
-                }
-            }
-        }
-    }
-    if (count > 0 && sum > 0)
-        distance = sum / count;
-    // Prints the distance on the Serial Monitor
-    if (distance > 100)
-        distance = 0;
-    //Serial.print("Distance: ");
-    //Serial.println(distance);
-
-    return distance;
 }

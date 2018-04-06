@@ -27,16 +27,21 @@ void WifiProcessor::begin(String name)
 
     // Set AP ssid
     wifi.println("AT+CWSAP=\"" + name + "\",\"\",5,0");
+    // Clear buffer
+    getResponse();
 
     // Set as access point and station
     wifi.println("AT+CWMODE=3");
+    // Clear buffer
+    getResponse();
 
     // Allow multiple connections
     wifi.println("AT+CIPMUX=1");
+    // Clear buffer
+    getResponse();
 
     // Create tcp server on port 333
     wifi.println("AT+CIPSERVER=1,333");
-
     // Clear buffer
     getResponse();
 }

@@ -27,7 +27,7 @@ const int MoreBotRunner::RightDirectionPin2 = 8;
 
 MoreBotRunner::MoreBotRunner()
     : moveMode(0)
-    , moveSpeed(50)
+    , moveSpeed(100)
     , wifi(WifiRxPin, WifiTxPin)
     , sonic(TriggerPin, EchoPin)
     , driver(LeftSpeedPin, LeftDirectionPin1, LeftDirectionPin2, RightSpeedPin, RightDirectionPin1, RightDirectionPin2)

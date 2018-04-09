@@ -33,7 +33,7 @@ double UltrasonicProcessor::readDistance()
     // Not sure what the timeout should be
     // See how long it takes for the sound to come back
     double duration = pulseIn(echoPin, HIGH, ReadTimeout);
-    double distance = distance = duration * 0.034 / 2;
+    double distance = duration * 0.034 / 2;
 
     // For calculating the average of last 10 reads to reduce jerkiness
     distances[currentIndex] = distance;

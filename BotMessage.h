@@ -14,15 +14,18 @@ public:
     String getCommand();
     String getData();
     int* getPins();
+    int getId();
     void setCommand(String command);
     void setData(String data);
     void setPins(int pins[PinsArrayLength]);
+    void setId(int id);
     String serialize();
 
 private:
     String command;
     String data;
     int pins[PinsArrayLength];
+    int id;
 };
 
 #endif

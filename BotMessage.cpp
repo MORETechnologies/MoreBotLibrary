@@ -14,6 +14,7 @@ BotMessage::BotMessage(String json)
     JsonObject& root = buffer.parseObject(json);
     command = (const char*)root["command"];
     data = (const char*)root["data"];
+    id = root["id"];
 
     JsonArray& pinsArray = root["pins"];
     pinsArray.copyTo(pins);
@@ -34,6 +35,11 @@ int* BotMessage::getPins()
     return pins;
 }
 
+int BotMessage::getId()
+{
+    return id;
+}
+
 void BotMessage::setCommand(String command)
 {
     this->command = command;
@@ -51,12 +57,18 @@ void BotMessage::setPins(int pins[PinsArrayLength])
     }
 }
 
+void BotMessage::setId(int id)
+{
+    this->id = id;
+}
+
 String BotMessage::serialize()
 {
     StaticJsonBuffer<200> buffer;
     JsonObject& root = buffer.createObject();
     root["command"] = command;
     root["data"] = data;
+    root["id"] = id;
 
     JsonArray& pinsArray = root.createNestedArray("pins");
     pinsArray.copyFrom(pins);

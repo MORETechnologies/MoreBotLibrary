@@ -3,14 +3,16 @@
 #include <Arduino.h>
 
 MotorController::MotorController()
-    : speedPin(0)
+    : id(-1)
+    , speedPin(0)
     , directionPin1(0)
     , directionPin2(0)
 {
 }
 
 MotorController::MotorController(int speedPin, int directionPin1, int directionPin2)
-    : speedPin(speedPin)
+    : id(-1)
+    , speedPin(speedPin)
     , directionPin1(directionPin1)
     , directionPin2(directionPin2)
 {
@@ -26,6 +28,8 @@ void MotorController::setup()
 // indexes: speedPin = 0, directionPin1 = 1, directionPin2 = 2
 void MotorController::setup(BotMessage& botMessage)
 {
+    id = botMessage.getId();
+
     int pins[BotMessage::PinsArrayLength] = botMessage.getPins();
 
     speedPin = pins[0];

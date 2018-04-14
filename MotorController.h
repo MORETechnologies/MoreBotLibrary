@@ -13,8 +13,10 @@ public:
     void setup(BotMessage& botMessage);
     void rotateClockwise(int speed);
     void rotateCounterclockwise(int speed);
+    int getId();
 
 private:
+    int id;
     int speedPin;
     int directionPin1;
     int directionPin2;

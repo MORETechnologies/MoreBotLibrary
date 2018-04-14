@@ -14,6 +14,7 @@ public:
     void rotateClockwise(int speed);
     void rotateCounterclockwise(int speed);
     int getId();
+    void setId(int id);
 
 private:
     int id;

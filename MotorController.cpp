@@ -58,3 +58,13 @@ void MotorController::rotateCounterclockwise(int speed)
     digitalWrite(directionPin2, LOW);
     analogWrite(speedPin, speed);
 }
+
+int MotorController::getId()
+{
+    return id;
+}
+
+void MotorController::setId(int id)
+{
+    this->id = id;
+}

@@ -1,87 +1,49 @@
-#include "DriveController.h";
+#include "DriveController.h"
+#include "MotorController.h"
 #include <Arduino.h>
 
 DriveController::DriveController(int leftSpeedPin, int leftDirectionPin1, int leftDirectionPin2, int rightSpeedPin, int rightDirectionPin1, int rightDirectionPin2)
-    : leftSpeedPin(leftSpeedPin)
-    , leftDirectionPin1(leftDirectionPin1)
-    , leftDirectionPin2(leftDirectionPin2)
-    , rightSpeedPin(rightSpeedPin)
-    , rightDirectionPin1(rightDirectionPin1)
-    , rightDirectionPin2(rightDirectionPin2)
+    : leftMotor(leftSpeedPin, leftDirectionPin1, leftDirectionPin2)
+    , rightMotor(rightSpeedPin, rightDirectionPin1, rightDirectionPin2)
 {
 }
 
 void DriveController::setup()
 {
-    pinMode(leftSpeedPin, OUTPUT);
-    pinMode(leftDirectionPin1, OUTPUT);
-    pinMode(leftDirectionPin2, OUTPUT);
-
-    pinMode(rightSpeedPin, OUTPUT);
-    pinMode(rightDirectionPin1, OUTPUT);
-    pinMode(rightDirectionPin2, OUTPUT);
+    leftMotor.setup();
+    rightMotor.setup();
 }
 
 void DriveController::goForward(int speed)
 {
-    moveLeftForward(speed);
-    moveRightForward(speed);
+    leftMotor.rotateClockwise(speed);
+    rightMotor.rotateClockwise(speed);
 }
 
 void DriveController::goBackward(int speed)
 {
-    moveLeftBackward(speed);
-    moveRightBackward(speed);
+    leftMotor.rotateCounterclockwise(speed);
+    rightMotor.rotateCounterclockwise(speed);
 }
 
 void DriveController::turnLeft(int speed)
 {
-    moveLeftBackward(speed);
-    moveRightForward(speed);
+    leftMotor.rotateCounterclockwise(speed);
+    rightMotor.rotateClockwise(speed);
 }
 
 void DriveController::turnRight(int speed)
 {
-    moveLeftForward(speed);
-    moveRightBackward(speed);
+    leftMotor.rotateClockwise(speed);
+    rightMotor.rotateCounterclockwise(speed);
 }
 
-void DriveController::moveLeftForward(int speed)
+MotorController DriveController::getLeftMotorController()
 {
-    speed = constrain(speed, 0, 100);
-    speed = map(speed, 0, 100, 0, 255);
-
-    digitalWrite(leftDirectionPin1, LOW);
-    digitalWrite(leftDirectionPin2, HIGH);
-    analogWrite(leftSpeedPin, speed);
+    return leftMotor;
 }
 
-void DriveController::moveRightForward(int speed)
+MotorController DriveController::getRightMotorController()
 {
-    speed = constrain(speed, 0, 100);
-    speed = map(speed, 0, 100, 0, 255);
-
-    digitalWrite(rightDirectionPin1, LOW);
-    digitalWrite(rightDirectionPin2, HIGH);
-    analogWrite(rightSpeedPin, speed);
-}
-
-void DriveController::moveLeftBackward(int speed)
-{
-    speed = constrain(speed, 0, 100);
-    speed = map(speed, 0, 100, 0, 255);
-
-    digitalWrite(leftDirectionPin1, HIGH);
-    digitalWrite(leftDirectionPin2, LOW);
-    analogWrite(leftSpeedPin, speed);
-}
-
-void DriveController::moveRightBackward(int speed)
-{
-    speed = constrain(speed, 0, 100);
-    speed = map(speed, 0, 100, 0, 255);
-
-    digitalWrite(rightDirectionPin1, HIGH);
-    digitalWrite(rightDirectionPin2, LOW);
-    analogWrite(rightSpeedPin, speed);
+    return rightMotor;
 }

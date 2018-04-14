@@ -30,7 +30,7 @@ void MotorController::setup(BotMessage& botMessage)
 {
     id = botMessage.getId();
 
-    int pins[BotMessage::PinsArrayLength] = botMessage.getPins();
+    int* pins = botMessage.getPins();
 
     speedPin = pins[0];
     directionPin1 = pins[1];

@@ -7,18 +7,22 @@
 class BotMessage
 {
 public:
+    static const int PinsArrayLength = 3;
+
     BotMessage();
     BotMessage(String json);
-    BotMessage(String command, String data);
     String getCommand();
     String getData();
+    int* getPins();
     void setCommand(String command);
     void setData(String data);
+    void setPins(int pins[PinsArrayLength]);
     String serialize();
 
 private:
     String command;
     String data;
+    int pins[PinsArrayLength];
 };
 
 #endif

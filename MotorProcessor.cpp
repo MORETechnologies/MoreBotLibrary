@@ -14,7 +14,7 @@ void MotorProcessor::process(BotMessage& message)
             if (motors[i].getId() < 0) {
                 motors[i].setId(motorMessage.getId());
                 motors[i].setup(motorMessage.getSpeedPin(), motorMessage.getDirectionPin1(), motorMessage.getDirectionPin2());
-                i = MotorsCount;
+                break;
             }
         }
     } else if (command == "clockwise") {
@@ -22,7 +22,7 @@ void MotorProcessor::process(BotMessage& message)
         for (int i = 0; i < MotorsCount; i++) {
             if (motors[i].getId() == id) {
                 motors[i].rotateClockwise(motorMessage.getSpeed());
-                i = MotorsCount;
+                break;
             }
         }
     } else if (command == "counter") {
@@ -30,7 +30,7 @@ void MotorProcessor::process(BotMessage& message)
         for (int i = 0; i < MotorsCount; i++) {
             if (motors[i].getId() == id) {
                 motors[i].rotateCounterclockwise(motorMessage.getSpeed());
-                i = MotorsCount;
+                break;
             }
         }
     } else if (command == "remove") {
@@ -38,7 +38,7 @@ void MotorProcessor::process(BotMessage& message)
         for (int i = 0; i < MotorsCount; i++) {
             if (motors[i].getId() == id) {
                 motors[i].setId(-1);
-                i = MotorsCount;
+                break;
             }
         }
     }

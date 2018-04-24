@@ -5,6 +5,8 @@
 #include "DriveController.h"
 #include "MoreBotRunner.h"
 #include "MotorController.h"
+#include "MotorMessage.h"
+#include "MotorProcessor.h"
 #include "UltrasonicProcessor.h"
 #include "WifiProcessor.h"
 

@@ -10,7 +10,7 @@ public:
     MotorController();
     MotorController(int speedPin, int directionPin1, int directionPin2);
     void setup();
-    void setup(BotMessage& botMessage);
+    void setup(int speedPin, int directionPin1, int directionPin2);
     void rotateClockwise(int speed);
     void rotateCounterclockwise(int speed);
     int getId();

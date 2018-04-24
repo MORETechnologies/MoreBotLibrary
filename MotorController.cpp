@@ -25,16 +25,11 @@ void MotorController::setup()
     pinMode(directionPin2, OUTPUT);
 }
 
-// indexes: speedPin = 0, directionPin1 = 1, directionPin2 = 2
-void MotorController::setup(BotMessage& botMessage)
+void MotorController::setup(int speedPin, int directionPin1, int directionPin2)
 {
-    id = botMessage.getId();
-
-    int* pins = botMessage.getPins();
-
-    speedPin = pins[0];
-    directionPin1 = pins[1];
-    directionPin2 = pins[2];
+    this->speedPin = speedPin;
+    this->directionPin1 = directionPin1;
+    this->directionPin2 = directionPin2;
 
     setup();
 }

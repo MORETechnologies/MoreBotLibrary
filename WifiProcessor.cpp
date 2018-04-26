@@ -5,7 +5,7 @@
 
 const long WifiProcessor::InitialBaudRate = 115200;
 const int WifiProcessor::BaudRate = 9600;
-const int WifiProcessor::ResponseTimeout = 50;
+const int WifiProcessor::ResponseTimeout = 300;
 
 WifiProcessor::WifiProcessor(int rxPin, int txPin)
     : wifi(rxPin, txPin)

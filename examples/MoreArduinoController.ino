@@ -1,4 +1,4 @@
-#include "MoreBotRunner.h"
+#include <MoreBotLibrary.h>
 
 MoreBotRunner bot;
 

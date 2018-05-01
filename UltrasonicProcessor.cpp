@@ -1,7 +1,7 @@
 #include "UltrasonicProcessor.h";
 #include <Arduino.h>
 
-const int UltrasonicProcessor::ReadTimeout = 100;
+const int UltrasonicProcessor::ReadTimeout = 10000;
 
 UltrasonicProcessor::UltrasonicProcessor(int triggerPin, int echoPin)
     : currentIndex(0)
